@@ -1,0 +1,65 @@
+def continued_fraction(a, b, base=10):
+    """Generate digits of continued fraction a(0)+b(1)/(a(1)+b(2)/(...)."""
+    (p0, q0), (p1, q1) = (a(0), 1), (a(1) * a(0) + b(1), a(1))
+    k = 1
+    while True:
+        (d0, r0), (d1, r1) = divmod(p0, q0), divmod(p1, q1)
+        if d0 == d1:
+            yield d1
+            p0, p1 = base * r0, base * r1
+        else:
+            k = k + 1
+            x, y = a(k), b(k)
+            (p0, q0), (p1, q1) = (p1, q1), (x * p1 + y * p0, x * q1 + y * q0)
+
+x = 0
+y = 10000
+run = True
+
+while run:
+    clearFile = input("Hello! Before we begin, would you like to clear the pidigits text file? (y/n) ").lower()
+    if clearFile == "y":
+        pidigit = open("pidigits.txt","w")
+        pidigit.close()
+    else:
+        break
+        run = False
+
+    digits = int(input("How many digits of pi would you like to calculate? "))
+    start_time = time.time()
+    for digit in continued_fraction(lambda k: 0 if k == 0 else 2 * k - 1,
+                                    lambda k: 4 if k == 1 else (k - 1)**2, 10):
+        if x >= digits:
+            run = False
+            break
+
+        x+=1
+        print(digit, file=open("pidigits.txt","a"))
+        if x % y == 0:
+            p = round(((x/digits)*100),1)
+            print("["+str(x)+"/"+str(digits)+"]"+" "+str(p)+"%")
+
+if clearFile == "y":
+    total_time = time.time() - start_time
+
+    fileSizeByte = os.path.getsize("C:\\Users\\crawf\\Documents\\PythonProjects\\pi\\pidigits.txt")
+    fileSizeKilo = fileSizeByte/1024
+    fileSizeMega = fileSizeKilo/1024
+    fileSizeGiga = fileSizeMega/1024
+
+    if fileSizeByte<1024:
+        defFileSize = round(fileSizeByte,1)
+        abb = "B"
+    elif fileSizeKilo<1024:
+        defFileSize = round(fileSizeKilo,1)
+        abb = "KB"
+    elif fileSizeMega<1024:
+        defFileSize = round(fileSizeMega,1)
+        abb = "MB"
+    else:
+        defFileSize = round(fileSizeGiga,1)
+        abb = "GB"
+
+    print()
+    fileSizeName = str(defFileSize)+abb
+    print("Calculation complete. "+str(digits)+" digits calculated in "+str(total_time)+" seconds. Pidigits file is "+fileSizeName)
